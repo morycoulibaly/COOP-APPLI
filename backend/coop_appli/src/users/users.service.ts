@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '@prisma/client';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { Role } from "@prisma/client";
 
 @Injectable()
 export class UsersService {
@@ -17,7 +17,7 @@ export class UsersService {
   findAll(role?: Role) {
     return this.prisma.user.findMany({
       where: role ? { role } : undefined,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         nom: true,
@@ -28,6 +28,22 @@ export class UsersService {
         actif: true,
         createdAt: true,
         // passwordHash volontairement exclu
+      },
+    });
+  }
+
+  // Annuaire des membres, accessible à tout utilisateur connecté (adhérent
+  // ou admin). Volontairement limité à nom/prénom/téléphone : pas d'email,
+  // pas de statut de compte, pas de rôle interne exposé aux autres membres.
+  findAllMembers() {
+    return this.prisma.user.findMany({
+      where: { actif: true },
+      orderBy: { nom: "asc" },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        telephone: true,
       },
     });
   }
