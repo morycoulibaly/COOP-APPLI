@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 
@@ -43,16 +44,11 @@ export default function LoginPage() {
     setErreur("");
     setChargement(true);
     try {
-      const { access_token, user } = await api.verifyLoginOtp({
-        telephone,
-        code,
-      });
+      const { access_token, user } = await api.verifyLoginOtp({ telephone, code });
       login(access_token, user);
       router.push("/");
     } catch (err) {
-      setErreur(
-        err instanceof Error ? err.message : "Code incorrect, réessaie.",
-      );
+      setErreur(err instanceof Error ? err.message : "Code incorrect, réessaie.");
     } finally {
       setChargement(false);
     }
@@ -153,6 +149,12 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+
+        <p className="text-center mt-6">
+          <Link href="/connexion-admin" className="text-sm text-slate-400 underline">
+            Je suis administrateur
+          </Link>
+        </p>
       </div>
     </main>
   );

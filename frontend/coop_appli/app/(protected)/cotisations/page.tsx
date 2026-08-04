@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, Cotisation } from "../../../lib/api";
+import { useAuth } from "../../../lib/auth-context";
 
 const LABELS_STATUT: Record<string, { label: string; classes: string }> = {
   PAYEE: { label: "Payée", classes: "bg-emerald-100 text-emerald-800 border-emerald-300" },
@@ -13,6 +14,7 @@ function formaterMontant(montant: string): string {
 }
 
 export default function CotisationsAdminPage() {
+  const { user } = useAuth();
   const [cotisations, setCotisations] = useState<Cotisation[]>([]);
   const [statutFiltre, setStatutFiltre] = useState("");
   const [chargement, setChargement] = useState(true);
@@ -30,7 +32,9 @@ export default function CotisationsAdminPage() {
       .finally(() => setChargement(false));
   }
 
-  useEffect(charger, [statutFiltre]);
+  useEffect(() => {
+    if (user?.role === "ADMIN") charger();
+  }, [statutFiltre, user]);
 
   async function handlePaiement(cotisationId: string) {
     try {
@@ -44,6 +48,18 @@ export default function CotisationsAdminPage() {
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "Impossible d'enregistrer le paiement");
     }
+  }
+
+  if (user?.role !== "ADMIN") {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 text-center max-w-sm">
+          <p className="text-lg text-slate-700">
+            Cette page est réservée aux administrateurs de l'amicale.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

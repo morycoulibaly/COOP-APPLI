@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 const TOKEN_KEY = "coopappli_token";
 
 export interface User {
@@ -92,6 +92,12 @@ export const api = {
 
   verifyLoginOtp: (data: { telephone: string; code: string }) =>
     request<AuthResponse>("/auth/login/verify-otp", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  loginAdmin: (data: { telephone: string; password: string }) =>
+    request<AuthResponse>("/auth/admin/login", {
       method: "POST",
       body: JSON.stringify(data),
     }),
