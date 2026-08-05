@@ -38,6 +38,13 @@ export interface Membre {
   photoUrl?: string | null;
 }
 
+// Vue admin sur un utilisateur — inclut le statut actif/inactif, absent
+// de l'annuaire public (Membre).
+export interface UtilisateurAdmin extends Membre {
+  role: "ADHERENT" | "ADMIN";
+  actif: boolean;
+}
+
 interface AuthResponse {
   access_token: string;
   user: User;
@@ -106,6 +113,22 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  // ─── Admin : définir/réinitialiser le mot de passe via OTP ──
+  // Utile pour un adhérent qui vient d'être promu admin, ou un admin
+  // qui a oublié son mot de passe.
+
+  requestAdminPasswordOtp: (data: { telephone: string }) =>
+    request<void>("/auth/admin/password/request-otp", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  setAdminPassword: (data: { telephone: string; code: string; newPassword: string }) =>
+    request<AuthResponse>("/auth/admin/password/set", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   getMyCotisations: () => request<Cotisation[]>("/cotisations/mine"),
 
   // ─── Événements ────────────────────────────────────────────
@@ -149,8 +172,22 @@ export const api = {
     return res.json();
   },
 
+  // ─── Administration des comptes (admin/users) ───────────────
+
+  getUsersAdmin: (role?: "ADHERENT" | "ADMIN") =>
+    request<UtilisateurAdmin[]>(`/admin/users${role ? `?role=${role}` : ""}`),
+
+  createAdmin: (data: { nom: string; prenom: string; telephone: string; email?: string }) =>
+    request<UtilisateurAdmin>("/admin/users", { method: "POST", body: JSON.stringify(data) }),
+
   promoteToAdmin: (id: string) =>
-    request<Membre>(`/admin/users/${id}/promote`, { method: "PATCH" }),
+    request<UtilisateurAdmin>(`/admin/users/${id}/promote`, { method: "PATCH" }),
+
+  deactivateUser: (id: string) =>
+    request<UtilisateurAdmin>(`/admin/users/${id}/deactivate`, { method: "PATCH" }),
+
+  reactivateUser: (id: string) =>
+    request<UtilisateurAdmin>(`/admin/users/${id}/reactivate`, { method: "PATCH" }),
 
   // ─── Cotisations (vue admin) ──────────────────────────────
 

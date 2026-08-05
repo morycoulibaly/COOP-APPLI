@@ -9,7 +9,11 @@ function formaterMontant(montant: string): string {
 }
 
 function formaterDate(date: string): string {
-  return new Date(date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(date).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 // Suggestions "apprises" — se remplissent toutes seules à l'usage, stockées
@@ -66,22 +70,28 @@ export default function EvenementsPage() {
   useEffect(() => {
     setNomsFrequents(chargerListe<NomFrequent>(CLE_NOMS_FREQUENTS, []));
     setMontantsFrequents(
-      chargerListe<number>(CLE_MONTANTS_FREQUENTS, MONTANTS_SUGGERES_PAR_DEFAUT),
+      chargerListe<number>(
+        CLE_MONTANTS_FREQUENTS,
+        MONTANTS_SUGGERES_PAR_DEFAUT,
+      ),
     );
   }, []);
 
   function memoriserUsage(nomUtilise: string, montantUtilise: number) {
     setNomsFrequents((prev) => {
       const sansDoublon = prev.filter((item) => item.nom !== nomUtilise);
-      const maj = [{ nom: nomUtilise, montant: montantUtilise }, ...sansDoublon].slice(
-        0,
-        MAX_SUGGESTIONS,
-      );
+      const maj = [
+        { nom: nomUtilise, montant: montantUtilise },
+        ...sansDoublon,
+      ].slice(0, MAX_SUGGESTIONS);
       sauvegarderListe(CLE_NOMS_FREQUENTS, maj);
       return maj;
     });
     setMontantsFrequents((prev) => {
-      const maj = Array.from(new Set([montantUtilise, ...prev])).slice(0, MAX_SUGGESTIONS);
+      const maj = Array.from(new Set([montantUtilise, ...prev])).slice(
+        0,
+        MAX_SUGGESTIONS,
+      );
       sauvegarderListe(CLE_MONTANTS_FREQUENTS, maj);
       return maj;
     });
@@ -97,7 +107,9 @@ export default function EvenementsPage() {
     api
       .getEvenements()
       .then(setEvenements)
-      .catch((err) => setErreur(err instanceof Error ? err.message : "Erreur de chargement"))
+      .catch((err) =>
+        setErreur(err instanceof Error ? err.message : "Erreur de chargement"),
+      )
       .finally(() => setChargement(false));
   }
 
@@ -111,7 +123,9 @@ export default function EvenementsPage() {
     // de sécurité reste côté backend (CreateEvenementDto), puisque n'importe
     // qui peut appeler l'API directement en contournant ce formulaire.
     if (dateEvenement < aujourdHui) {
-      setErreur("La date de l'événement ne peut pas être antérieure à aujourd'hui.");
+      setErreur(
+        "La date de l'événement ne peut pas être antérieure à aujourd'hui.",
+      );
       return;
     }
 
@@ -133,7 +147,9 @@ export default function EvenementsPage() {
       setFormulaireOuvert(false);
       charger();
     } catch (err) {
-      setErreur(err instanceof Error ? err.message : "Impossible de créer l'événement");
+      setErreur(
+        err instanceof Error ? err.message : "Impossible de créer l'événement",
+      );
     } finally {
       setEnvoiEnCours(false);
     }
@@ -143,7 +159,12 @@ export default function EvenementsPage() {
     <div className="pt-0 px-4 py-6">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-2xl font-bold text-stone-900" style={{ fontFamily: "var(--font-serif)" }}>Événements</h1>
+          <h1
+            className="text-2xl font-bold text-stone-900"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            Événements
+          </h1>
           {user?.role === "ADMIN" && (
             <button
               onClick={() => setFormulaireOuvert((o) => !o)}
@@ -160,7 +181,9 @@ export default function EvenementsPage() {
             className="bg-white rounded-2xl border border-stone-200 p-5 mb-6 space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Nom</label>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Nom
+              </label>
               {nomsFrequents.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2">
                   {nomsFrequents.map((item) => (
@@ -270,9 +293,14 @@ export default function EvenementsPage() {
         ) : (
           <ul className="space-y-4">
             {evenements.map((ev) => (
-              <li key={ev.id} className="bg-white rounded-2xl border border-stone-200 p-5">
+              <li
+                key={ev.id}
+                className="bg-white rounded-2xl border border-stone-200 p-5"
+              >
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <h2 className="text-lg font-semibold text-stone-900">{ev.nom}</h2>
+                  <h2 className="text-lg font-semibold text-stone-900">
+                    {ev.nom}
+                  </h2>
                   <span
                     className={`text-sm font-medium px-3 py-1 rounded-full border ${
                       ev.statut === "OUVERT"
@@ -283,10 +311,15 @@ export default function EvenementsPage() {
                     {ev.statut === "OUVERT" ? "Ouvert" : "Clôturé"}
                   </span>
                 </div>
-                {ev.description && <p className="text-stone-600 mb-2">{ev.description}</p>}
-                <p className="text-xl font-bold text-stone-900">{formaterMontant(ev.montantCotisation)}</p>
+                {ev.description && (
+                  <p className="text-stone-600 mb-2">{ev.description}</p>
+                )}
+                <p className="text-xl font-bold text-stone-900">
+                  {formaterMontant(ev.montantCotisation)}
+                </p>
                 <p className="text-sm text-stone-500 mt-1">
-                  {formaterDate(ev.dateEvenement)} · échéance le {formaterDate(ev.dateLimitePaiement)}
+                  {formaterDate(ev.dateEvenement)} · échéance le{" "}
+                  {formaterDate(ev.dateLimitePaiement)}
                 </p>
               </li>
             ))}

@@ -6,24 +6,26 @@ import Link from "next/link";
 import { api } from "../../lib/api";
 import { useAuth } from "../../lib/auth-context";
 
-type Etape = "telephone" | "code";
+type Etape = "infos" | "code";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const [etape, setEtape] = useState<Etape>("telephone");
+  const [etape, setEtape] = useState<Etape>("infos");
+  const [nom, setNom] = useState("");
+  const [prenom, setPrenom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [code, setCode] = useState("");
   const [erreur, setErreur] = useState("");
   const [chargement, setChargement] = useState(false);
 
-  async function handleDemandeCode(e: FormEvent) {
+  async function handleInscription(e: FormEvent) {
     e.preventDefault();
     setErreur("");
     setChargement(true);
     try {
-      await api.requestLoginOtp({ telephone });
+      await api.requestRegisterOtp({ nom, prenom, telephone });
       setEtape("code");
     } catch (err) {
       setErreur(
@@ -41,16 +43,11 @@ export default function LoginPage() {
     setErreur("");
     setChargement(true);
     try {
-      const { access_token, user } = await api.verifyLoginOtp({
-        telephone,
-        code,
-      });
+      const { access_token, user } = await api.verifyRegisterOtp({ telephone, code });
       login(access_token, user);
       router.push("/");
     } catch (err) {
-      setErreur(
-        err instanceof Error ? err.message : "Code incorrect, réessaie.",
-      );
+      setErreur(err instanceof Error ? err.message : "Code incorrect, réessaie.");
     } finally {
       setChargement(false);
     }
@@ -64,19 +61,41 @@ export default function LoginPage() {
             className="text-3xl font-bold text-stone-900"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            COOP'APPLI
+            COOP&apos;APPLI
           </h1>
-          <p className="text-lg text-stone-500 mt-2">Connexion</p>
+          <p className="text-lg text-stone-600 mt-2">Créer un compte</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-stone-200 p-6">
-          {etape === "telephone" ? (
-            <form onSubmit={handleDemandeCode} className="space-y-5">
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+          {etape === "infos" ? (
+            <form onSubmit={handleInscription} className="space-y-5">
               <div>
-                <label
-                  htmlFor="telephone"
-                  className="block text-lg font-medium text-stone-800 mb-2"
-                >
+                <label htmlFor="prenom" className="block text-lg font-medium text-stone-800 mb-2">
+                  Prénom
+                </label>
+                <input
+                  id="prenom"
+                  required
+                  autoFocus
+                  value={prenom}
+                  onChange={(e) => setPrenom(e.target.value)}
+                  className="w-full text-xl px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-800 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="nom" className="block text-lg font-medium text-stone-800 mb-2">
+                  Nom
+                </label>
+                <input
+                  id="nom"
+                  required
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  className="w-full text-xl px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-800 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label htmlFor="telephone" className="block text-lg font-medium text-stone-800 mb-2">
                   Ton numéro de téléphone
                 </label>
                 <input
@@ -84,11 +103,10 @@ export default function LoginPage() {
                   type="tel"
                   inputMode="tel"
                   required
-                  autoFocus
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
                   placeholder="07 08 09 00 01"
-                  className="w-full text-xl px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-700 focus:outline-none"
+                  className="w-full text-xl px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-800 focus:outline-none"
                 />
               </div>
               {erreur && (
@@ -103,14 +121,17 @@ export default function LoginPage() {
               >
                 {chargement ? "Envoi en cours..." : "Recevoir mon code"}
               </button>
+              <p className="text-center text-base text-stone-500">
+                Déjà un compte ?{" "}
+                <Link href="/login" className="text-emerald-900 font-medium underline">
+                  Se connecter
+                </Link>
+              </p>
             </form>
           ) : (
             <form onSubmit={handleValidationCode} className="space-y-5">
               <div>
-                <label
-                  htmlFor="code"
-                  className="block text-lg font-medium text-stone-800 mb-2"
-                >
+                <label htmlFor="code" className="block text-lg font-medium text-stone-800 mb-2">
                   Le code reçu par SMS
                 </label>
                 <input
@@ -124,7 +145,7 @@ export default function LoginPage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="123456"
-                  className="w-full text-2xl tracking-widest text-center px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-700 focus:outline-none"
+                  className="w-full text-2xl tracking-widest text-center px-4 py-4 border-2 border-stone-300 rounded-xl focus:border-emerald-800 focus:outline-none"
                 />
               </div>
 
@@ -145,34 +166,17 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setEtape("telephone");
+                  setEtape("infos");
                   setCode("");
                   setErreur("");
                 }}
                 className="w-full text-base text-stone-500 underline py-2"
               >
-                Modifier mon numéro
+                Modifier mes informations
               </button>
             </form>
           )}
         </div>
-
-        <p className="text-center mt-6">
-          <Link
-            href="/connexion-admin"
-            className="text-sm text-stone-400 underline"
-          >
-            Je suis administrateur
-          </Link>
-          <p className="text-sm text-stone-400 underline mt-2">
-            <Link href="/register">Créer un compte</Link> ·{" "}
-            </p>
-            <p className="text-sm text-stone-400 underline mt-2">
-            <Link href="/admin/mot-de-passe">
-              Je suis admin, définir mon mot de passe
-            </Link>
-          </p>
-        </p>
       </div>
     </main>
   );
