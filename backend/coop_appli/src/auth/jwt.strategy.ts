@@ -6,9 +6,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        ignoreExpiration: false,
-        secretOrKey: process.env.JWT_SECRET || 'fallback_secret_cle_ultra_securisee', // Ajout du ||
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey:
+        process.env.JWT_SECRET || 'fallback_secret_cle_ultra_securisee', // Ajout du ||
     });
   }
 
