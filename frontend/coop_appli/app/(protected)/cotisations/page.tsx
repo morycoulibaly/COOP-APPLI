@@ -33,8 +33,8 @@ export default function CotisationsAdminPage() {
   }
 
   useEffect(() => {
-    if (user?.role === "ADMIN") charger();
-  }, [statutFiltre, user]);
+    charger();
+  }, [statutFiltre]);
 
   async function handlePaiement(cotisationId: string) {
     try {
@@ -50,22 +50,10 @@ export default function CotisationsAdminPage() {
     }
   }
 
-  if (user?.role !== "ADMIN") {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6 flex items-center justify-center">
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 text-center max-w-sm">
-          <p className="text-lg text-slate-700">
-            Cette page est réservée aux administrateurs de l'amicale.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-6">
+    <div className="pt-0 px-4 py-6">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-900 mb-5">Suivi des cotisations</h1>
+        <h1 className="text-2xl font-bold text-stone-900 mb-5" style={{ fontFamily: "var(--font-serif)" }}>Suivi des cotisations</h1>
 
         <div className="flex gap-2 mb-5">
           {[
@@ -78,8 +66,8 @@ export default function CotisationsAdminPage() {
               onClick={() => setStatutFiltre(opt.value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium border ${
                 statutFiltre === opt.value
-                  ? "bg-indigo-900 text-white border-indigo-900"
-                  : "bg-white text-slate-600 border-slate-300"
+                  ? "bg-emerald-900 text-white border-emerald-900"
+                  : "bg-white text-stone-600 border-stone-300"
               }`}
             >
               {opt.label}
@@ -94,29 +82,29 @@ export default function CotisationsAdminPage() {
         )}
 
         {chargement ? (
-          <p className="text-lg text-slate-500">Chargement...</p>
+          <p className="text-lg text-stone-500">Chargement...</p>
         ) : (
           <ul className="space-y-3">
             {cotisations.map((c) => {
               const style = LABELS_STATUT[c.statut] ?? LABELS_STATUT.EN_ATTENTE;
               return (
-                <li key={c.id} className="bg-white rounded-2xl border border-slate-200 p-4">
+                <li key={c.id} className="bg-white rounded-2xl border border-stone-200 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-stone-900">
                         {c.user?.prenom} {c.user?.nom}
                       </p>
-                      <p className="text-sm text-slate-500">{c.evenement.nom}</p>
+                      <p className="text-sm text-stone-500">{c.evenement.nom}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-slate-900">{formaterMontant(c.montantDu)}</p>
+                      <p className="font-bold text-stone-900">{formaterMontant(c.montantDu)}</p>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${style.classes}`}>
                         {style.label}
                       </span>
                     </div>
                   </div>
 
-                  {c.statut !== "PAYEE" && (
+                  {c.statut !== "PAYEE" && user?.role === "ADMIN" && (
                     <div className="mt-3 pt-3 border-t border-slate-100">
                       {cotisationEnCours === c.id ? (
                         <div className="flex flex-wrap gap-2 items-center">
@@ -125,12 +113,12 @@ export default function CotisationsAdminPage() {
                             placeholder="Montant"
                             value={montantPaiement}
                             onChange={(e) => setMontantPaiement(e.target.value)}
-                            className="w-28 px-2 py-1.5 border border-slate-300 rounded-lg text-sm"
+                            className="w-28 px-2 py-1.5 border border-stone-300 rounded-lg text-sm"
                           />
                           <select
                             value={moyenPaiement}
                             onChange={(e) => setMoyenPaiement(e.target.value)}
-                            className="px-2 py-1.5 border border-slate-300 rounded-lg text-sm"
+                            className="px-2 py-1.5 border border-stone-300 rounded-lg text-sm"
                           >
                             <option value="ESPECES">Espèces</option>
                             <option value="CHEQUE">Chèque</option>
@@ -145,7 +133,7 @@ export default function CotisationsAdminPage() {
                           </button>
                           <button
                             onClick={() => setCotisationEnCours(null)}
-                            className="px-3 py-1.5 text-slate-500 text-sm"
+                            className="px-3 py-1.5 text-stone-500 text-sm"
                           >
                             Annuler
                           </button>
@@ -156,7 +144,7 @@ export default function CotisationsAdminPage() {
                             setCotisationEnCours(c.id);
                             setMontantPaiement(c.montantDu);
                           }}
-                          className="text-sm font-medium text-indigo-900 underline"
+                          className="text-sm font-medium text-emerald-800 underline"
                         >
                           Enregistrer un paiement
                         </button>

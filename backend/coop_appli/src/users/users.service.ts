@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { Role } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -17,7 +17,7 @@ export class UsersService {
   findAll(role?: Role) {
     return this.prisma.user.findMany({
       where: role ? { role } : undefined,
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         nom: true,
@@ -38,12 +38,13 @@ export class UsersService {
   findAllMembers() {
     return this.prisma.user.findMany({
       where: { actif: true },
-      orderBy: { nom: "asc" },
+      orderBy: { nom: 'asc' },
       select: {
         id: true,
         nom: true,
         prenom: true,
         telephone: true,
+        photoUrl: true,
       },
     });
   }
@@ -52,6 +53,37 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: { actif: false },
+    });
+  }
+
+  updateTelephone(id: string, telephone: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { telephone },
+    });
+  }
+
+  updatePhoto(id: string, photoUrl: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { photoUrl },
+    });
+  }
+
+  // Détail d'un membre pour la page profil membre. Le rôle n'est inclus
+  // dans la réponse que si l'appelant est admin (voir controller) — un
+  // adhérent ne doit pas savoir qui est admin ou non via cette route.
+  findMemberById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id, actif: true },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        telephone: true,
+        role: true,
+        photoUrl: true,
+      },
     });
   }
 

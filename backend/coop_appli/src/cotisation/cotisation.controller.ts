@@ -31,11 +31,11 @@ export class CotisationController {
     return this.cotisationService.findMine(currentUser.userId);
   }
 
-  // ─── Admin : suivi filtrable de toutes les cotisations ──────
+  // ─── Consultation : ouvert à tous les utilisateurs connectés ─
+  // (demande explicite du bureau de l'amicale — transparence sur les
+  // cotisations, comme pour l'annuaire des membres)
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
   findAll(
     @Query('evenementId') evenementId?: string,
     @Query('statut') statut?: StatutCotisation,

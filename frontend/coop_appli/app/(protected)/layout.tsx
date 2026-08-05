@@ -16,7 +16,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   }, [isLoading, user, router]);
 
   if (isLoading || !user) {
-    return null; // évite un flash de contenu avant la redirection
+    return null;
   }
 
   return <AppShell>{children}</AppShell>;

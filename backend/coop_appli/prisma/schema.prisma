@@ -59,6 +59,7 @@ model User {
   telephone    String   @unique
   email        String?  @unique
   passwordHash String? // Uniquement renseigné pour les admins ; les adhérents s'authentifient par OTP
+  photoUrl     String? // chemin vers la photo de profil, uploadée via /users/me/photo
   role         Role     @default(ADHERENT)
   actif        Boolean  @default(true) // false tant que l'inscription par OTP n'est pas confirmée
   createdAt    DateTime @default(now())

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users } from "lucide-react";
+import Link from "next/link";
 import { api, Membre } from "../../../lib/api";
 import { UserAvatar } from "../../../components/user-avatar";
-import { Carte, EtatVide } from "../../../components/carte";
 
 export default function MembresPage() {
   const [membres, setMembres] = useState<Membre[]>([]);
@@ -20,42 +19,36 @@ export default function MembresPage() {
   }, []);
 
   return (
-    <div>
-      <h1 className="font-serif text-2xl font-bold text-[#23291F] mb-5">Membres de l&apos;amicale</h1>
+    <div className="pt-0 px-4 py-6">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-stone-900 mb-5" style={{ fontFamily: "var(--font-serif)" }}>Membres de l'amicale</h1>
 
-      {chargement && <p className="text-lg text-[#5B6157]">Chargement...</p>}
+        {chargement && <p className="text-lg text-stone-500">Chargement...</p>}
+        {erreur && (
+          <p className="text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-base">
+            {erreur}
+          </p>
+        )}
 
-      {erreur && (
-        <p className="text-[#8A3128] bg-[#FAEAE8] border border-[#F0C9C4] rounded-lg px-4 py-3 text-base">
-          {erreur}
-        </p>
-      )}
-
-      {!chargement && !erreur && membres.length === 0 && (
-        <EtatVide
-          icon={Users}
-          titre="Aucun membre à afficher"
-          description="L'annuaire se remplira au fur et à mesure des inscriptions."
-        />
-      )}
-
-      <ul>
-        {membres.map((m) => (
-          <li key={m.id}>
-            <Carte>
-              <div className="flex items-center gap-4">
-                <UserAvatar nom={m.nom} prenom={m.prenom} size={48} />
+        <ul className="space-y-3">
+          {membres.map((m) => (
+            <li key={m.id}>
+              <Link
+                href={`/membres/${m.id}`}
+                className="bg-white rounded-2xl border border-stone-200 p-4 flex items-center gap-4 hover:border-emerald-400 transition-colors"
+              >
+                <UserAvatar nom={m.nom} prenom={m.prenom} photoUrl={m.photoUrl} size={48} />
                 <div>
-                  <p className="text-lg font-semibold text-[#23291F]">
+                  <p className="text-lg font-semibold text-stone-900">
                     {m.prenom} {m.nom}
                   </p>
-                  <p className="text-[#5B6157]">{m.telephone}</p>
+                  <p className="text-stone-500">{m.telephone}</p>
                 </div>
-              </div>
-            </Carte>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

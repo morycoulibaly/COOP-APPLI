@@ -11,6 +11,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Accueil", href: "/", icon: Home },
   { label: "Événements", href: "/evenements", icon: CalendarDays },
   { label: "Mes Cotisations", href: "/mes-cotisations", icon: Wallet, roles: ["ADHERENT"] },
-  { label: "Cotisations", href: "/cotisations", icon: ClipboardList, roles: ["ADMIN"] },
+  { label: "Cotisations", href: "/cotisations", icon: ClipboardList },
   { label: "Membres", href: "/membres", icon: Users },
 ];

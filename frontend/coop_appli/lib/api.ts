@@ -7,6 +7,7 @@ export interface User {
   prenom: string;
   telephone: string;
   role: "ADHERENT" | "ADMIN";
+  photoUrl?: string | null;
 }
 
 export interface Evenement {
@@ -33,6 +34,8 @@ export interface Membre {
   nom: string;
   prenom: string;
   telephone: string;
+  role?: "ADHERENT" | "ADMIN";
+  photoUrl?: string | null;
 }
 
 interface AuthResponse {
@@ -123,6 +126,30 @@ export const api = {
   // ─── Membres ───────────────────────────────────────────────
 
   getMembers: () => request<Membre[]>("/users/members"),
+
+  getMemberDetail: (id: string) => request<Membre>(`/users/members/${id}`),
+
+  updateMyProfile: (data: { telephone: string }) =>
+    request<User>("/users/me", { method: "PATCH", body: JSON.stringify(data) }),
+
+  uploadPhoto: async (file: File): Promise<User> => {
+    const token = tokenStorage.get();
+    const formData = new FormData();
+    formData.append("photo", file);
+    const res = await fetch(`${API_URL}/users/me/photo`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData, // pas de Content-Type manuel : le navigateur le définit avec la boundary
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ message: "Échec de l'envoi de la photo" }));
+      throw new Error(Array.isArray(body.message) ? body.message.join(", ") : body.message);
+    }
+    return res.json();
+  },
+
+  promoteToAdmin: (id: string) =>
+    request<Membre>(`/admin/users/${id}/promote`, { method: "PATCH" }),
 
   // ─── Cotisations (vue admin) ──────────────────────────────
 
