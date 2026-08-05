@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADHERENT
+  ADMIN
+}
+
+enum StatutEvenement {
+  OUVERT
+  CLOS
+}
+
+enum StatutCotisation {
+  EN_ATTENTE
+  PAYEE
+  EN_RETARD
+}
+
+enum MoyenPaiement {
+  ESPECES
+  CHEQUE
+  VIREMENT
+  MOBILE_MONEY
+}
+
+enum CanalNotification {
+  SMS
+  PUSH
+}
+
+enum StatutNotification {
+  ENVOYEE
+  ECHEC
+}
+
+// ─────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  nom          String
+  prenom       String
+  telephone    String   @unique
+  email        String?  @unique
+  passwordHash String? // Uniquement renseigné pour les admins ; les adhérents s'authentifient par OTP
+  photoUrl     String? // chemin vers la photo de profil, uploadée via /users/me/photo
+  role         Role     @default(ADHERENT)
+  actif        Boolean  @default(true) // false tant que l'inscription par OTP n'est pas confirmée
+  createdAt    DateTime @default(now())
+
+  // Relations
+  evenementsCrees      Evenement[]       @relation("EvenementCreateur")
+  cotisations          Cotisation[]
+  paiementsEnregistres Paiement[]        @relation("PaiementEnregistreur")
+  notifications        Notification[]
+  journalActivite      JournalActivite[] @relation("JournalAdmin")
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(uuid())
+  telephone String
+  codeHash  String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([telephone])
+  @@map("otp_codes")
+}
+
+model Evenement {
+  id                 String          @id @default(uuid())
+  nom                String
+  description        String?
+  montantCotisation  Decimal         @db.Decimal(10, 2)
+  dateEvenement      DateTime
+  dateLimitePaiement DateTime
+  statut             StatutEvenement @default(OUVERT)
+  createdAt          DateTime        @default(now())
+
+  createdBy String
+  createur  User   @relation("EvenementCreateur", fields: [createdBy], references: [id])
+
+  cotisations Cotisation[]
+
+  @@map("evenements")
+}
+
+model Cotisation {
+  id           String           @id @default(uuid())
+  montantDu    Decimal          @db.Decimal(10, 2)
+  statut       StatutCotisation @default(EN_ATTENTE)
+  dateEcheance DateTime
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  evenementId String
+  evenement   Evenement @relation(fields: [evenementId], references: [id])
+
+  paiements Paiement[]
+
+  // Un adhérent ne peut avoir qu'une seule cotisation par événement
+  @@unique([userId, evenementId])
+  @@map("cotisations")
+}
+
+model Paiement {
+  id            String        @id @default(uuid())
+  montant       Decimal       @db.Decimal(10, 2)
+  moyenPaiement MoyenPaiement
+  note          String?
+  datePaiement  DateTime      @default(now())
+
+  cotisationId String
+  cotisation   Cotisation @relation(fields: [cotisationId], references: [id])
+
+  enregistrePar String
+  enregistreur  User   @relation("PaiementEnregistreur", fields: [enregistrePar], references: [id])
+
+  @@map("paiements")
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  canal     CanalNotification
+  message   String
+  statut    StatutNotification  @default(ENVOYEE)
+  dateEnvoi DateTime            @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
+
+model JournalActivite {
+  id        String   @id @default(uuid())
+  action    String
+  cibleType String
+  cibleId   String
+  date      DateTime @default(now())
+
+  adminId String
+  admin   User   @relation("JournalAdmin", fields: [adminId], references: [id])
+
+  @@map("journal_activite")
+}
