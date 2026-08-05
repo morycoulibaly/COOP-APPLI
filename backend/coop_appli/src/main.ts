@@ -9,8 +9,27 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
-    origin: true, // Autorise toutes les origines (y compris votre domaine Vercel)
+    origin: true,
+
+    // 2. Autorise explicitement toutes les méthodes HTTP y compris OPTIONS
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+
+    // 3. Autorise tous les en-têtes de requêtes (JWT, Ngrok, Content-Type...)
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+      'ngrok-skip-browser-warning',
+    ],
+
+    // 4. Permet l'envoi de cookies/tokens d'authentification
     credentials: true,
+
+    // 5. Répond 200/204 aux requêtes OPTIONS avec les bons en-têtes
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.useGlobalPipes(
